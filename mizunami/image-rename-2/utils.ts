@@ -27,7 +27,7 @@ export async function copyImages() {
         const files = await fs.readdir(folderPath);
 
         for (const file of files) {
-          if (file.endsWith('.jpg')) {
+          if (file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')) {
             const sourcePath = path.join(folderPath, file);
             const destPath = path.join(s1FolderPath, file);
 
@@ -57,9 +57,9 @@ export async function removeImagesWithHighNumbers() {
         const files = await fs.readdir(folderPath);
 
         for (const file of files) {
-          if (file.endsWith('.jpg')) {
+          if (file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')) {
             // ファイル名から末尾の数字を抽出
-            const match = file.match(/-(\d+)\.jpg$/);
+            const match = file.match(/-(\d+)\.(jpg|jpeg|png)$/);
             if (match) {
               const number = parseInt(match[1]);
               if (number >= 9) {
@@ -93,16 +93,16 @@ export async function renameImages() {
         const files = await fs.readdir(folderPath);
         // 番号順にソートして逆順に処理
         const sortedFiles = files
-          .filter(file => file.endsWith('.jpg'))
+          .filter(file => file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png'))
           .sort((a, b) => {
-            const numA = parseInt(a.match(/-(\d+)\.jpg$/)?.[1] || '0');
-            const numB = parseInt(b.match(/-(\d+)\.jpg$/)?.[1] || '0');
+            const numA = parseInt(a.match(/-(\d+)\.(jpg|jpeg|png)$/)?.[1] || '0');
+            const numB = parseInt(b.match(/-(\d+)\.(jpg|jpeg|png)$/)?.[1] || '0');
             return numB - numA;
           });
 
         // まず全てのファイルに一時的な名前を付ける
         for (const file of sortedFiles) {
-          const match = file.match(/^(.+)-(\d+)\.jpg$/);
+          const match = file.match(/^(.+)-(\d+)\.(jpg|jpeg|png)$/);
           if (match) {
             const oldPath = path.join(folderPath, file);
             const tempName = `temp_${file}`;
@@ -116,25 +116,26 @@ export async function renameImages() {
         const sortedTempFiles = tempFiles
           .filter(file => file.startsWith('temp_'))
           .sort((a, b) => {
-            const numA = parseInt(a.match(/-(\d+)\.jpg$/)?.[1] || '0');
-            const numB = parseInt(b.match(/-(\d+)\.jpg$/)?.[1] || '0');
+            const numA = parseInt(a.match(/-(\d+)\.(jpg|jpeg|png)$/)?.[1] || '0');
+            const numB = parseInt(b.match(/-(\d+)\.(jpg|jpeg|png)$/)?.[1] || '0');
             return numB - numA;
           });
 
         for (const tempFile of sortedTempFiles) {
-          const match = tempFile.match(/^temp_(.+)-(\d+)\.jpg$/);
+          const match = tempFile.match(/^temp_(.+)-(\d+)\.(jpg|jpeg|png)$/);
           if (match) {
             const baseName = match[1];
             const number = parseInt(match[2]);
+            const extension = match[3];
             const oldPath = path.join(folderPath, tempFile);
             let newName;
 
             if (number === 1) {
               // XXXXNNN-1 → XXXXNNN
-              newName = `${baseName}.jpg`;
+              newName = `${baseName}.${extension}`;
             } else {
               // XXXXNNN-n → XXXXNNN-(n-1)
-              newName = `${baseName}-${number - 1}.jpg`;
+              newName = `${baseName}-${number - 1}.${extension}`;
             }
 
             const newPath = path.join(folderPath, newName);

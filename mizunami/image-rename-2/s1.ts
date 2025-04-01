@@ -7,4 +7,4 @@ async function main() {
   await renameImages();
 }
 
-main();
+await main();
